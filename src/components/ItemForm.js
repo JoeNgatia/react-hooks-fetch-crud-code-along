@@ -1,48 +1,24 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
-function ItemForm() {
+function ItemForm({ onAddItem }) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Produce");
 
   function handleSubmit(e) {
     e.preventDefault();
+    const newItem = { name, category, isInCart: false };
 
-    // Create the new item data object
-    const itemData = {
-      name: name,
-      category: category,
-      isInCart: false
-    };
-
-    // Send a POST request to the server to add the new item
     fetch("http://localhost:4000/items", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(itemData)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newItem),
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then((item) => {
-        console.log("Item added:", item);
-        // Clear form fields after submission
-        setName("");
-        setCategory("Produce");
-      })
-      .catch((error) => console.error('Error adding item:', error));
-  }
-
-  function handleNameChange(e) {
-    setName(e.target.value);
-  }
-
-  function handleCategoryChange(e) {
-    setCategory(e.target.value);
+      .then(response => response.json())
+      .then(item => onAddItem(item))
+      .catch(error => console.error("Failed to add item:", error));
+    
+    setName("");
+    setCategory("Produce");
   }
 
   return (
@@ -50,19 +26,22 @@ function ItemForm() {
       <label>
         Name:
         <input
+          required
           type="text"
           value={name}
-          onChange={handleNameChange}
-          required
+          onChange={(e) => setName(e.target.value)}
         />
       </label>
       <label>
         Category:
-        <select value={category} onChange={handleCategoryChange}>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
           <option value="Produce">Produce</option>
           <option value="Dairy">Dairy</option>
-          <option value="Bakery">Bakery</option>
-          <option value="Frozen">Frozen</option>
+          <option value="Meat">Meat</option>
+          <option value="Snacks">Snacks</option>
         </select>
       </label>
       <button type="submit">Add Item</button>
